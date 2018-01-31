@@ -1,6 +1,5 @@
 package com.example.timurmuhortov.multithread_downloader
 
-import android.net.sip.SipSession
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -24,6 +23,7 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
     private var countReadyThread = 0
     private var countThread = 0
     private lateinit var fileName: String
+    private var mutex = Mutex()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,11 +46,11 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
     }
 
 
-    fun sendParams(link: String, countThread: Int) {
+    private fun sendParams(link: String, countThread: Int) {
         this.countThread = countThread
         countReadyThread = 0
 
-        Log.i(tag, "link: $link counteThread = $countThread")
+        Log.i(tag, "link: $link countThread = $countThread")
         var url: String = if (link.isEmpty()) "http://brandmark.io/logo-rank/random/pepsi.png"
         else link
         val fileName = URLUtil.guessFileName(url, null, null)
@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
     }
 
 
-    fun createResultFile(fileName: String) {
+    private fun createResultFile(fileName: String) {
         val resultFile = File(this.getExternalFilesDir("/"), fileName)
         val outputStream = FileOutputStream(resultFile, false)
 
@@ -100,8 +100,6 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
                 outputStream.write(b, 0, len)
                 len = inputStream.read(b)
             }
-
-
             inputStream.close()
         }
 
@@ -111,7 +109,9 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
     }
 
     override fun onTaskCompleted() {
+        mutex.lock()
         countReadyThread++
+        mutex.release()
         Log.i(tag, "Thread number $countReadyThread ready!!!!")
         if (countThread == countReadyThread) {
             Log.i(tag, "BOOM!")

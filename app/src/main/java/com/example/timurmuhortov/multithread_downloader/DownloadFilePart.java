@@ -13,8 +13,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.channels.ReadableByteChannel;
-import java.util.logging.Logger;
 
 /**
  * @author: timur.mukhortov
@@ -30,7 +28,6 @@ public class DownloadFilePart extends AsyncTask<Void, Void, String> {
     private long end;
     private File tmp_file;
     private OnTaskCompleted listener;
-    private Activity activity;
 
     public DownloadFilePart(String url, int start, int end, File tmp_file, OnTaskCompleted listener) {
         this.url = url;
@@ -38,7 +35,6 @@ public class DownloadFilePart extends AsyncTask<Void, Void, String> {
         this.end = end;
         this.tmp_file = tmp_file;
         this.listener = listener;
-        this.activity = (Activity)listener;
     }
 
     private String download(){
@@ -69,7 +65,7 @@ public class DownloadFilePart extends AsyncTask<Void, Void, String> {
             outputStream.close();
             inputStream.close();
 
-            return "Downloaded Size: " + len + " data: " + b;
+            return "OK";
 
         }catch(MalformedURLException mue) {
             mue.printStackTrace();
@@ -86,19 +82,6 @@ public class DownloadFilePart extends AsyncTask<Void, Void, String> {
 
     @Override
     protected void onPostExecute(String s) {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setCancelable(true);
-        builder.setMessage("sup bro!");
-        builder.setInverseBackgroundForced(true);
-        builder.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton)
-            {
-                dialog.dismiss();
-            }
-        });
-
-        if (!activity.isFinishing()) builder.show();
         listener.onTaskCompleted();
     }
 }
