@@ -1,26 +1,29 @@
 package com.example.timurmuhortov.multithread_downloader
 
+import android.net.sip.SipSession
 import android.os.AsyncTask
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import android.view.View
 import android.webkit.URLUtil
 import android.widget.Button
 import android.widget.EditText
 import android.widget.NumberPicker
 import android.widget.Toast
-import java.io.*
-import java.math.BigInteger
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.Collections.min
 import kotlin.math.min
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), OnTaskCompleted {
 
     private val tag = "MainActivity"
+    private var countReadyThread = 0
+    private var countThread = 0
+    private lateinit var fileName: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,13 +48,15 @@ class MainActivity : AppCompatActivity() {
 
 
     fun sendParams(link: String, countThread: Int) {
-        var downloaders: ArrayList<AsyncTask<Void, Void, String>> = ArrayList()
+        this.countThread = countThread
+        countReadyThread = 0
+        val downloaders: ArrayList<AsyncTask<Void, Void, String>> = ArrayList()
 
         Log.i(tag, "link: $link counteThread = $countThread")
-        var url: String
-        if (link.isEmpty()) url = "http://www.sample-videos.com/img/Sample-jpg-image-50kb.jpg"
-        else url = link
+        var url: String = if (link.isEmpty()) "http://brandmark.io/logo-rank/random/pepsi.png"
+        else link
         val fileName = URLUtil.guessFileName(url, null, null)
+        this.fileName = fileName
         val fileSize = DownloadFileSize(url).execute().get()
 
         val blockSize = fileSize / countThread
@@ -62,37 +67,10 @@ class MainActivity : AppCompatActivity() {
             var end = min(start + blockSize, fileSize - 1)
             val file = File(this.getExternalFilesDir("/"), "tmp"+i)
             file.delete()
-            downloaders.add(DownloadFilePart(url, start, end, file).execute())
+            downloaders.add(DownloadFilePart(url, start, end, file, this).execute())
 
 
         }
-
-        for (i in downloaders){
-            i.get()
-        }
-
-
-        val resultFile = File(this.getExternalFilesDir("/"), fileName)
-        val outputStream = FileOutputStream(resultFile, false);
-
-        for(i in 1..countThread){
-            val inputStream: InputStream = File(this.getExternalFilesDir("/"), "tmp"+i).inputStream()
-
-            val b = ByteArray(2048)
-            var len  = inputStream.read(b)
-
-            while (len > 0) {
-                outputStream.write(b, 0 ,len)
-                len = inputStream.read(b)
-            }
-
-
-            inputStream.close()
-        }
-
-        outputStream.flush()
-        outputStream.close()
-        Toast.makeText(applicationContext, "DOWNLOAD SUCCESS!", Toast.LENGTH_LONG).show()
 
     }
 
@@ -106,6 +84,41 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+
+    }
+
+
+    fun createResultFile(fileName: String){
+        val resultFile = File(this.getExternalFilesDir("/"), fileName)
+        val outputStream = FileOutputStream(resultFile, false);
+
+        for(i in 1..countThread){
+            val inputStream: InputStream = File(this.getExternalFilesDir("/"), "tmp"+i).inputStream()
+
+            val b = ByteArray(2048)
+            var len  = inputStream.read(b)
+
+            while (len >= 0) {
+                outputStream.write(b, 0 ,len)
+                len = inputStream.read(b)
+            }
+
+
+            inputStream.close()
+        }
+
+        outputStream.flush()
+        outputStream.close()
+        Toast.makeText(applicationContext, "DOWNLOAD SUCCESS!", Toast.LENGTH_LONG).show()
+    }
+
+    override fun onTaskCompleted() {
+        countReadyThread++
+        Log.i(tag, "Thread number $countReadyThread ready!!!!")
+        if (countThread == countReadyThread){
+            Log.i(tag, "BOOM!")
+            createResultFile(fileName)
+        }
 
     }
 

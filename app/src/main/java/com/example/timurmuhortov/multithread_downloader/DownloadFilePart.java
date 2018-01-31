@@ -1,6 +1,9 @@
 package com.example.timurmuhortov.multithread_downloader;
 
+import android.app.Activity;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
 import java.io.File;
@@ -26,12 +29,16 @@ public class DownloadFilePart extends AsyncTask<Void, Void, String> {
     private long start;
     private long end;
     private File tmp_file;
+    private OnTaskCompleted listener;
+    private Activity activity;
 
-    public DownloadFilePart(String url, int start, int end, File tmp_file) {
+    public DownloadFilePart(String url, int start, int end, File tmp_file, OnTaskCompleted listener) {
         this.url = url;
         this.start = start;
         this.end = end;
         this.tmp_file = tmp_file;
+        this.listener = listener;
+        this.activity = (Activity)listener;
     }
 
     private String download(){
@@ -46,12 +53,12 @@ public class DownloadFilePart extends AsyncTask<Void, Void, String> {
 
             InputStream inputStream = urlConnection.getInputStream();
 
-            FileOutputStream outputStream = new FileOutputStream(this.tmp_file, false);
+            FileOutputStream outputStream = new FileOutputStream(this.tmp_file);
 
-            byte[] b = new byte[2048];
+            byte[] b = new byte[4096];
             int len = inputStream.read(b);
 
-            while(len > 0) {
+            while(len >= 0) {
                 Log.i("MainActivity", "Downloaded Size: " + len + " data: " + b);
                 outputStream.write(b, 0, len);
                 len = inputStream.read(b);
@@ -73,5 +80,24 @@ public class DownloadFilePart extends AsyncTask<Void, Void, String> {
     @Override
     protected String doInBackground(Void... voids) {
         return download();
+    }
+
+    @Override
+    protected void onPostExecute(String s) {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setCancelable(true);
+        builder.setMessage("sup bro!");
+        builder.setInverseBackgroundForced(true);
+        builder.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton)
+            {
+                listener.onTaskCompleted();
+                dialog.dismiss();
+            }
+        });
+
+        if (!activity.isFinishing()) builder.show();
+
     }
 }
