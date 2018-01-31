@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val buttonDownload = findViewById<Button>(R.id.button_download)
-        val buttonClear =findViewById<Button>(R.id.button_clear)
+        val buttonClear = findViewById<Button>(R.id.button_clear)
         val editText = findViewById<EditText>(R.id.editText_link)
         val numberPick = findViewById<NumberPicker>(R.id.numberPicker_thread)
         numberPick.minValue = 1
@@ -44,7 +44,6 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
             editText.text.clear()
         }
     }
-
 
 
     fun sendParams(link: String, countThread: Int) {
@@ -62,14 +61,15 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
         val blockSize = fileSize / countThread
         Log.i(tag, "FileSize = " + fileSize)
 
-        for(i in 1..countThread) {
-            var start = (i-1) * blockSize
-            var end = min(start + blockSize, fileSize - 1)
-            val file = File(this.getExternalFilesDir("/"), "tmp"+i)
-            file.delete()
-            downloaders.add(DownloadFilePart(url, start, end, file, this).execute())
-
-
+        var start: Int
+        var end: Int
+        for (i in 1..countThread) {
+            start = (i - 1) * blockSize
+            end = start + blockSize - 1
+            val file = File(this.getExternalFilesDir("/"), "tmp" + i)
+//            file.delete()
+            //downloaders.add(DownloadFilePart(url, start, end, file, this).execute())
+            DownloadFilePart(url, start, end, file, this).execute()
         }
 
     }
@@ -78,28 +78,27 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
 
         override fun doInBackground(vararg params: Void?): Int {
             val url = URL(url)
-            val urlConnection =  url.openConnection() as HttpURLConnection
+            val urlConnection = url.openConnection() as HttpURLConnection
             urlConnection.requestMethod = "HEAD"
             return urlConnection.contentLength
         }
 
 
-
     }
 
 
-    fun createResultFile(fileName: String){
+    fun createResultFile(fileName: String) {
         val resultFile = File(this.getExternalFilesDir("/"), fileName)
         val outputStream = FileOutputStream(resultFile, false);
 
-        for(i in 1..countThread){
-            val inputStream: InputStream = File(this.getExternalFilesDir("/"), "tmp"+i).inputStream()
+        for (i in 1..countThread) {
+            val inputStream: InputStream = File(this.getExternalFilesDir("/"), "tmp" + i).inputStream()
 
             val b = ByteArray(2048)
-            var len  = inputStream.read(b)
+            var len = inputStream.read(b)
 
-            while (len >= 0) {
-                outputStream.write(b, 0 ,len)
+            while (len > 0) {
+                outputStream.write(b, 0, len)
                 len = inputStream.read(b)
             }
 
@@ -115,7 +114,7 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
     override fun onTaskCompleted() {
         countReadyThread++
         Log.i(tag, "Thread number $countReadyThread ready!!!!")
-        if (countThread == countReadyThread){
+        if (countThread == countReadyThread) {
             Log.i(tag, "BOOM!")
             createResultFile(fileName)
         }

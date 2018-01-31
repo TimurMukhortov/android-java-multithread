@@ -58,7 +58,7 @@ public class DownloadFilePart extends AsyncTask<Void, Void, String> {
             byte[] b = new byte[4096];
             int len = inputStream.read(b);
 
-            while(len >= 0) {
+            while(len > 0) {
                 Log.i("MainActivity", "Downloaded Size: " + len + " data: " + b);
                 outputStream.write(b, 0, len);
                 len = inputStream.read(b);
@@ -92,12 +92,11 @@ public class DownloadFilePart extends AsyncTask<Void, Void, String> {
         builder.setNeutralButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton)
             {
-                listener.onTaskCompleted();
                 dialog.dismiss();
             }
         });
 
         if (!activity.isFinishing()) builder.show();
-
+        listener.onTaskCompleted();
     }
 }
