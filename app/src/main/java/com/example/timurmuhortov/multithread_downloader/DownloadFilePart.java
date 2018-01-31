@@ -45,14 +45,10 @@ public class DownloadFilePart extends AsyncTask<Void, Void, String> {
             Log.i("MainActivity", "Response Code: " + urlConnection.getResponseCode());
 
             InputStream inputStream = urlConnection.getInputStream();
-            long size = 0;
 
-            //while(inputStream.read() != -1 )
-            //    size++;
+            FileOutputStream outputStream = new FileOutputStream(this.tmp_file, false);
 
-            FileOutputStream outputStream = new FileOutputStream(this.tmp_file);
-
-            byte[] b = new byte[4096];
+            byte[] b = new byte[2048];
             int len = inputStream.read(b);
 
             while(len > 0) {
@@ -60,7 +56,7 @@ public class DownloadFilePart extends AsyncTask<Void, Void, String> {
                 outputStream.write(b, 0, len);
                 len = inputStream.read(b);
             }
-
+            outputStream.flush();
             outputStream.close();
             inputStream.close();
 

@@ -4,4 +4,5 @@
     <string name="text_enter_link">Введите ссылку:</string>
     <string name="text_enter_count_thread">Укажите количество thread(ов):</string>
     <string name="download">download!</string>
+    <string name="clear">CLEAR</string>
 </resources>
