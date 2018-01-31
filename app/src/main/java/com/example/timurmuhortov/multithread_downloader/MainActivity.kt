@@ -49,7 +49,6 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
     fun sendParams(link: String, countThread: Int) {
         this.countThread = countThread
         countReadyThread = 0
-        val downloaders: ArrayList<AsyncTask<Void, Void, String>> = ArrayList()
 
         Log.i(tag, "link: $link counteThread = $countThread")
         var url: String = if (link.isEmpty()) "http://brandmark.io/logo-rank/random/pepsi.png"
@@ -58,17 +57,15 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
         this.fileName = fileName
         val fileSize = DownloadFileSize(url).execute().get()
 
-        val blockSize = fileSize / countThread
+        val blockSize = fileSize / countThread + (if (fileSize % countThread !== 0) 1 else 0)
         Log.i(tag, "FileSize = " + fileSize)
 
         var start: Int
         var end: Int
         for (i in 1..countThread) {
             start = (i - 1) * blockSize
-            end = start + blockSize - 1
+            end = min(start + blockSize - 1, fileSize - 1)
             val file = File(this.getExternalFilesDir("/"), "tmp" + i)
-//            file.delete()
-            //downloaders.add(DownloadFilePart(url, start, end, file, this).execute())
             DownloadFilePart(url, start, end, file, this).execute()
         }
 
@@ -80,6 +77,8 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
             val url = URL(url)
             val urlConnection = url.openConnection() as HttpURLConnection
             urlConnection.requestMethod = "HEAD"
+            urlConnection.setRequestProperty("accept-encoding", "identity")
+            urlConnection.setRequestProperty("content-encoding", "identity")
             return urlConnection.contentLength
         }
 
@@ -89,7 +88,7 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
 
     fun createResultFile(fileName: String) {
         val resultFile = File(this.getExternalFilesDir("/"), fileName)
-        val outputStream = FileOutputStream(resultFile, false);
+        val outputStream = FileOutputStream(resultFile, false)
 
         for (i in 1..countThread) {
             val inputStream: InputStream = File(this.getExternalFilesDir("/"), "tmp" + i).inputStream()

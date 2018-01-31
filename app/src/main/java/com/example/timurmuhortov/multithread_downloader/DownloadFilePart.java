@@ -46,6 +46,8 @@ public class DownloadFilePart extends AsyncTask<Void, Void, String> {
             URL url = new URL(this.url);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestProperty("range", String.format("bytes=%d-%d",this.start, this.end));
+            urlConnection.setRequestProperty("accept-encoding", "identity");
+            urlConnection.setRequestProperty("content-encoding", "identity");
             Log.i("MainActivity", String.format("bytes=%d-%d",this.start, this.end));
             urlConnection.connect();
 
