@@ -1,4 +1,4 @@
-package com.example.timurmuhortov.multithread_downloader
+package com.example.timurmuhortov.multithread_downloader.utils
 
 /**
  * @author: timur.mukhortov

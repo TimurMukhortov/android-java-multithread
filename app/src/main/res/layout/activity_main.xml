@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.timurmuhortov.multithread_downloader.MainActivity">
+    tools:context="com.example.timurmuhortov.multithread_downloader.ui.MainActivity">
 
     <EditText
         android:id="@+id/editText_link"
