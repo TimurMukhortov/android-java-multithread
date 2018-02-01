@@ -123,7 +123,7 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
                 len = inputStream.read(b)
             }
             inputStream.close()
-            //partFile.delete()
+            partFile.delete()
         }
 
         outputStream.flush()
