@@ -1,9 +1,6 @@
-package com.example.timurmuhortov.multithread_downloader;
+package com.example.timurmuhortov.multithread_downloader.utils;
 
-import android.app.Activity;
-import android.content.DialogInterface;
 import android.os.AsyncTask;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
 import java.io.File;

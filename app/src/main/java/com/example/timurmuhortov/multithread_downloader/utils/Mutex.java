@@ -1,4 +1,4 @@
-package com.example.timurmuhortov.multithread_downloader;
+package com.example.timurmuhortov.multithread_downloader.utils;
 
 import java.util.concurrent.Semaphore;
 
@@ -16,9 +16,9 @@ public class Mutex {
     public void lock() {
         try {
             mutex.acquire();
-        } catch (Exception e){
+        } catch (Exception ignored){
 
-        };
+        }
     }
 
     public void release() {
