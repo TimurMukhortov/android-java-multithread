@@ -2,6 +2,7 @@ package com.example.timurmuhortov.multithread_downloader
 
 import android.os.AsyncTask
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.webkit.URLUtil
@@ -33,8 +34,8 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
         val editText = findViewById<EditText>(R.id.editText_link)
         val numberPick = findViewById<NumberPicker>(R.id.numberPicker_thread)
         numberPick.minValue = 1
-        numberPick.maxValue = 5
-        numberPick.wrapSelectorWheel = false
+        numberPick.maxValue = 99
+        numberPick.wrapSelectorWheel = true
 
         buttonDownload.setOnClickListener {
             sendParams(editText.text.toString(), numberPick.value)
@@ -45,6 +46,17 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
         }
     }
 
+    override fun onTaskCompleted() {
+        mutex.lock()
+        countReadyThread++
+        mutex.release()
+        Log.i(tag, "Thread number $countReadyThread ready!!!!")
+        if (countThread == countReadyThread) {
+            Log.i(tag, "BOOM!")
+            createResultFile(fileName)
+        }
+
+    }
 
     private fun sendParams(link: String, countThread: Int) {
         this.countThread = countThread
@@ -71,21 +83,6 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
 
     }
 
-    class DownloadFileSize(private val url: String) : AsyncTask<Void, Void, Int>() {
-
-        override fun doInBackground(vararg params: Void?): Int {
-            val url = URL(url)
-            val urlConnection = url.openConnection() as HttpURLConnection
-            urlConnection.requestMethod = "HEAD"
-            urlConnection.setRequestProperty("accept-encoding", "identity")
-            urlConnection.setRequestProperty("content-encoding", "identity")
-            return urlConnection.contentLength
-        }
-
-
-    }
-
-
     private fun createResultFile(fileName: String) {
         val resultFile = File(this.getExternalFilesDir("/"), fileName)
         val outputStream = FileOutputStream(resultFile, false)
@@ -108,15 +105,28 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
         Toast.makeText(applicationContext, "DOWNLOAD SUCCESS!", Toast.LENGTH_LONG).show()
     }
 
-    override fun onTaskCompleted() {
-        mutex.lock()
-        countReadyThread++
-        mutex.release()
-        Log.i(tag, "Thread number $countReadyThread ready!!!!")
-        if (countThread == countReadyThread) {
-            Log.i(tag, "BOOM!")
-            createResultFile(fileName)
+    private fun createErrorAlertDialog(msg: String) =
+            AlertDialog.Builder(applicationContext)
+                .setTitle("Ошибка")
+                .setMessage(msg)
+                .setNegativeButton("OK", { dialog, _ -> dialog.dismiss()})
+                .create()
+                .show()
+
+
+
+    class DownloadFileSize(private val url: String) : AsyncTask<Void, Void, Int>() {
+
+
+        override fun doInBackground(vararg params: Void?): Int {
+            val url = URL(url)
+            val urlConnection = url.openConnection() as HttpURLConnection
+            urlConnection.requestMethod = "HEAD"
+            urlConnection.setRequestProperty("accept-encoding", "identity")
+            urlConnection.setRequestProperty("content-encoding", "identity")
+            return urlConnection.contentLength
         }
+
 
     }
 
