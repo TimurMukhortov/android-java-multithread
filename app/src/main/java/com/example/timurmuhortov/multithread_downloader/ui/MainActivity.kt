@@ -13,6 +13,8 @@ import com.example.timurmuhortov.multithread_downloader.utils.DownloadFilePart
 import com.example.timurmuhortov.multithread_downloader.utils.Mutex
 import com.example.timurmuhortov.multithread_downloader.utils.OnTaskCompleted
 import com.example.timurmuhortov.multithread_downloader.R
+import com.example.timurmuhortov.multithread_downloader.presentation.presenter.MainPresenter
+import com.example.timurmuhortov.multithread_downloader.presentation.view.IMainView
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -21,13 +23,17 @@ import java.net.URL
 import kotlin.math.min
 
 
-class MainActivity : AppCompatActivity(), OnTaskCompleted {
+class MainActivity : AppCompatActivity(), IMainView, OnTaskCompleted {
+    override fun showMsg() {
+        createErrorAlertDialog("BOOM!")
+    }
 
     private var fileName: String = ""
     private val filerPartNumber = "filerPartNumber"
     private var mutex = Mutex()
     private var countReadyThread = 0
     private var countThread = 0
+    private var mainPresenter = MainPresenter(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,13 +51,15 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
         buttonDownload.setOnClickListener {
             val url = editText.text.toString()
             if (checkURL(url)) {
-                sendParams(url, countThread)
+                mainPresenter.paramsRequest(url, countThread)
             }
         }
 
         buttonClear.setOnClickListener {
             editText.text.clear()
         }
+
+
     }
 
     override fun onTaskCompleted() {
@@ -131,7 +139,7 @@ class MainActivity : AppCompatActivity(), OnTaskCompleted {
         Toast.makeText(applicationContext, "DOWNLOAD SUCCESS!", Toast.LENGTH_LONG).show()
     }
 
-    private fun createErrorAlertDialog(msg: String) =
+    override fun createErrorAlertDialog(msg: String) =
             AlertDialog.Builder(this)
                     .setTitle("Ошибка:")
                     .setMessage(msg)
