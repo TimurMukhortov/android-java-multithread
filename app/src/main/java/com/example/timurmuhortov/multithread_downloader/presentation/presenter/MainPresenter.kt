@@ -34,12 +34,12 @@ class MainPresenter : AsyncResponse {
     private fun checkURL(url: String): Boolean {
 
         if (url.isEmpty()) {
-            view?.createAlertDialog("Введите URL!")
+            view!!.createAlertDialog("Введите URL!")
             return false
         }
 
         if (!URLUtil.isNetworkUrl(url)) {
-            view?.createAlertDialog("Некоректная URL ссылка.")
+            view!!.createAlertDialog("Некоректная URL ссылка.")
             return false
         }
 
@@ -48,7 +48,7 @@ class MainPresenter : AsyncResponse {
     }
 
     override fun responseServer(responseRequest: String) {
-        view?.createAlertDialog(responseRequest)
+        view!!.createAlertDialog(responseRequest)
 
     }
 
