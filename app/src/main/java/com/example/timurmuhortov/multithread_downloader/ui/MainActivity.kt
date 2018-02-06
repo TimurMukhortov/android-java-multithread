@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity(), IMainView {
         buttonDownload.setOnClickListener {
             val url = editText.text.toString()
             val countThread = numberPick.value
-            mainPresenter.paramsRequest(url, countThread)
+            mainPresenter.paramsRequest(url, countThread, this.getExternalFilesDir("/"))
         }
 
         buttonClear.setOnClickListener {

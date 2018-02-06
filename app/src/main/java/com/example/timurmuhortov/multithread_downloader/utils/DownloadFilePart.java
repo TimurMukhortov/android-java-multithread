@@ -27,7 +27,8 @@ public class DownloadFilePart extends AsyncTask<Void, Void, String> {
     private File tmp_file;
     private OnTaskCompleted listener;
 
-    public DownloadFilePart(String url, int start, int end, File tmp_file, OnTaskCompleted listener) {
+
+    DownloadFilePart(String url, int start, int end, File tmp_file, OnTaskCompleted listener) {
         this.url = url;
         this.start = start;
         this.end = end;
@@ -62,13 +63,14 @@ public class DownloadFilePart extends AsyncTask<Void, Void, String> {
             outputStream.flush();
             outputStream.close();
             inputStream.close();
-
             return "OK";
 
         }catch(MalformedURLException mue) {
             mue.printStackTrace();
         }catch(IOException ioe) {
             ioe.printStackTrace();
+        }catch (Exception e){
+            e.printStackTrace();
         }
         return "empty";
     }

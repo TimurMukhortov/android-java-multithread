@@ -4,6 +4,7 @@ import android.webkit.URLUtil
 import com.example.timurmuhortov.multithread_downloader.ui.MainActivity
 import com.example.timurmuhortov.multithread_downloader.utils.AsyncResponse
 import com.example.timurmuhortov.multithread_downloader.utils.MakeRequestTask
+import java.io.File
 
 /**
  * @author: timur.mukhortov
@@ -17,9 +18,9 @@ class MainPresenter : AsyncResponse {
 
     private var view: MainActivity? = null
 
-    fun paramsRequest(url: String, countThread: Int) {
+    fun paramsRequest(url: String, countThread: Int, path: File) {
         if (checkURL(url)) {
-            MakeRequestTask(this).execute(url, countThread.toString())
+            MakeRequestTask(this).execute(url, countThread, path)
         }
     }
 
