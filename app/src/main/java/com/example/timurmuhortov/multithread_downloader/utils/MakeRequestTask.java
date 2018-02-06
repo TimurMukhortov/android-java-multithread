@@ -10,7 +10,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -74,7 +73,7 @@ public class MakeRequestTask extends AsyncTask<String, Void, String> implements 
 
     private void createResultFile(String fileName) {
         File resultFile = new File(Environment.getExternalStoragePublicDirectory("/"), fileName);
-        FileOutputStream outputStream = null;
+        FileOutputStream outputStream;
         try {
             outputStream = new FileOutputStream(resultFile, false);
             for (int i = 0; i < countThread; i++) {
@@ -90,7 +89,7 @@ public class MakeRequestTask extends AsyncTask<String, Void, String> implements 
                     len = inputStream.read(b);
                 }
                 inputStream.close();
-                partFile.delete();
+                //partFile.delete();
 
             }
             outputStream.flush();
@@ -137,6 +136,7 @@ public class MakeRequestTask extends AsyncTask<String, Void, String> implements 
                 responseMessage = connection.getResponseMessage();
             }
 
+            //Disconnect to out url
             connection.disconnect();
 
         } catch (UnknownHostException ignored) {
@@ -162,7 +162,7 @@ public class MakeRequestTask extends AsyncTask<String, Void, String> implements 
         mutex.lock();
         countReadyThread++;
         mutex.release();
-        if (countThread == countReadyThread) {
+        if (countThread.equals(countReadyThread)) {
             Log.i(tagTas, "BOOM!");
             createResultFile(fileName);
         }
