@@ -9,6 +9,5 @@ package com.example.timurmuhortov.multithread_downloader.presentation.view
 
 
 interface IMainView {
-    fun showMsg()
-    fun createErrorAlertDialog(msg: String)
+    fun createAlertDialog(msg: String)
 }

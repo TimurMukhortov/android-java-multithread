@@ -10,5 +10,6 @@ package com.example.timurmuhortov.multithread_downloader.utils;
 
 public interface AsyncResponse {
 
-    void processFinish(Integer responseCode, String responseMessage);
+    void responseServer(String responseRequest);
+
 }

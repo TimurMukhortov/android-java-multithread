@@ -1,5 +1,6 @@
 package com.example.timurmuhortov.multithread_downloader.presentation.presenter
 
+import android.webkit.URLUtil
 import com.example.timurmuhortov.multithread_downloader.presentation.view.IMainView
 import com.example.timurmuhortov.multithread_downloader.utils.AsyncResponse
 import com.example.timurmuhortov.multithread_downloader.utils.MakeRequestTask
@@ -12,14 +13,31 @@ import com.example.timurmuhortov.multithread_downloader.utils.MakeRequestTask
  **/
 
 
-class MainPresenter(private val view: IMainView): AsyncResponse {
+class MainPresenter(private val view: IMainView) : AsyncResponse {
 
-    fun paramsRequest(url: String, countThread: Int){
-        MakeRequestTask(this).execute(url, countThread.toString())
+    fun paramsRequest(url: String, countThread: Int) {
+        if (checkURL(url)) {
+            MakeRequestTask(this).execute(url, countThread.toString())
+        }
     }
 
-    override fun processFinish(responseCode: Int, responseMessage: String) {
-        view.createErrorAlertDialog(responseCode.toString() + " : " + responseMessage)
+    private fun checkURL(url: String): Boolean {
+
+        if (url.isEmpty()) {
+            view.createAlertDialog("Введите URL!")
+            return false
+        }
+
+        if (!URLUtil.isNetworkUrl(url)) {
+            view.createAlertDialog("Некоректная URL ссылка.")
+            return false
+        }
+
+        return true
+    }
+
+    override fun responseServer(responseRequest: String) {
+        view.createAlertDialog(responseRequest)
     }
 
 }
