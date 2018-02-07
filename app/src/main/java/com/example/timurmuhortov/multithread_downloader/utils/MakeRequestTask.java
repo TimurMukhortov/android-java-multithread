@@ -6,12 +6,9 @@ import android.webkit.URLUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.UnknownHostException;
 
 import static java.lang.Math.min;
 
@@ -24,9 +21,6 @@ import static java.lang.Math.min;
 
 
 public class MakeRequestTask extends AsyncTask<Object, Void, String> implements OnTaskCompleted {
-
-    //Log
-    private String tagTas = "Task";
 
     private static final String REQUEST_METHOD = "GET";
     private static final int READ_TIMEOUT = 15000;
@@ -50,7 +44,7 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
         this.delegate = delegate;
     }
 
-    private void sendParams(String url, Integer countThread, Integer fileSize, File filePath) {
+    private void sendParams(String url, Integer countThread, Long fileSize, File filePath) {
         countReadyThread = 0;
 
         //get file name
@@ -59,14 +53,13 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
         if (fileSize == -1) {
             responseMessage = ("Неккоректная ссылка.");
         } else {
-            Integer blockSize = fileSize / countThread + ((fileSize % countThread != 0) ? 1 : 0);
-            Integer start;
-            Integer end;
+            Long blockSize = fileSize / countThread + ((fileSize % countThread != 0) ? 1 : 0);
+            Long start;
+            Long end;
             for (int i = 0; i < countThread; i++) {
                 start = i * blockSize;
                 end = min(start + blockSize - 1, fileSize - 1);
-                Log.i(tagTas, start + " " + end);
-                File file = new File(filePath, filerPartNumber + i +".txt");
+                File file = new File(filePath, filerPartNumber + i + ".txt");
                 new DownloadFilePart(url, start, end, file, this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
 
@@ -86,7 +79,6 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
                 int len = inputStream.read(b);
 
                 while (len > 0) {
-                    Log.i("MainActivity", "Downloaded Size: " + len + " data: " + b);
                     outputStream.write(b, 0, len);
                     len = inputStream.read(b);
                 }
@@ -97,14 +89,11 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
             outputStream.flush();
             outputStream.close();
             responseMessage = DOWNLOAD_SUCCESS;
-        } catch (FileNotFoundException e) {
-            Log.i(tagTas, e.toString());
-
+            delegate.responseServer(responseMessage);
+        } catch (Exception e){
+            e.printStackTrace();
             responseMessage = e.getMessage();
-        } catch (IOException e) {
-            Log.i(tagTas, e.toString());
-
-            responseMessage = e.getMessage();
+            delegate.responseServer(responseMessage);
         }
     }
 
@@ -134,10 +123,9 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
 
             //Get content size
             if (connection.getResponseCode() >= 200 && connection.getResponseCode() < 300) {
-                Integer fileSize = connection.getContentLength();
-                filePath = (File)params[2];
+                Long fileSize = connection.getContentLengthLong();
+                filePath = (File) params[2];
                 sendParams(url, countThread, fileSize, filePath);
-                Log.i(tagTas, "File size = " + fileSize);
                 responseMessage = DOWNLOAD_START;
 
                 //Disconnect to out url
@@ -147,13 +135,9 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
                 responseMessage = connection.getResponseMessage();
             }
 
-        } catch (UnknownHostException ignored) {
-            responseMessage = ignored.getMessage();
-            Log.i(tagTas, ignored.getMessage());
-            return "";
         } catch (Exception e) {
             responseMessage = e.getMessage();
-            Log.i(tagTas, e.getMessage());
+            e.printStackTrace();
             return "";
         }
 
@@ -163,7 +147,7 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
     @Override
     protected void onPostExecute(String s) {
         String answerMsg;
-        if(responseCode != null) answerMsg = responseCode + " : " + responseMessage;
+        if (responseCode != null) answerMsg = responseCode + " : " + responseMessage;
         else answerMsg = responseMessage;
         delegate.responseServer(answerMsg);
     }
@@ -174,7 +158,6 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
         countReadyThread++;
         mutex.release();
         if (countThread.equals(countReadyThread)) {
-            Log.i(tagTas, "DOING MERGE!");
             createResultFile(fileName);
         }
     }

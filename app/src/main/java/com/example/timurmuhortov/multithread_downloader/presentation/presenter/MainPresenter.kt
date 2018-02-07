@@ -50,7 +50,6 @@ class MainPresenter : AsyncResponse {
 
     override fun responseServer(responseRequest: String) {
         view!!.createAlertDialog(responseRequest)
-
     }
 
 }
