@@ -38,10 +38,13 @@ public class DownloadFilePart extends AsyncTask<Void, Void, String> {
     }
 
     private String download() {
+        HttpURLConnection urlConnection = null;
         try {
             URL url = new URL(this.url);
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestProperty("range", String.format("bytes=%d-%d", this.start, this.end));
+            urlConnection.setDoOutput(true);
+            urlConnection.setInstanceFollowRedirects(false);
             urlConnection.setRequestProperty("accept-encoding", "identity");
             urlConnection.setRequestProperty("content-encoding", "identity");
             urlConnection.connect();
@@ -69,6 +72,9 @@ public class DownloadFilePart extends AsyncTask<Void, Void, String> {
         } catch (Exception e) {
             e.printStackTrace();
             responseMessage = e.getMessage();
+        }
+        finally {
+            if( urlConnection != null) urlConnection.disconnect();
         }
         return "";
     }

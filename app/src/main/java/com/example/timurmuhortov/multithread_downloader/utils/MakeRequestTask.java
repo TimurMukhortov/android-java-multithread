@@ -58,7 +58,7 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
             for (int i = 0; i < countThread; i++) {
                 start = i * blockSize;
                 end = min(start + blockSize - 1, fileSize - 1);
-                File file = new File(filePath, filerPartNumber + i + ".txt");
+                File file = new File(filePath, filerPartNumber + i);
                 new DownloadFilePart(url, start, end, file, this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
 
@@ -71,7 +71,7 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
         try {
             outputStream = new FileOutputStream(resultFile, false);
             for (int i = 0; i < countThread; i++) {
-                File partFile = new File(filePath, filerPartNumber + i + ".txt");
+                File partFile = new File(filePath, filerPartNumber + i);
                 FileInputStream inputStream = new FileInputStream(partFile);
 
                 byte[] b = new byte[4096];
@@ -89,7 +89,7 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
             outputStream.close();
             responseMessage = DOWNLOAD_SUCCESS;
             delegate.responseServer(responseMessage);
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             responseMessage = e.getMessage();
             delegate.responseServer(responseMessage);
@@ -100,13 +100,14 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
     protected String doInBackground(Object... params) {
         String url = params[0].toString();
         countThread = (Integer) params[1];
+        HttpURLConnection connection = null;
         try {
 
             //Create a URL object holding our url
             URL urlConnection = new URL(url);
 
             //Create a connection
-            HttpURLConnection connection = (HttpURLConnection)
+            connection = (HttpURLConnection)
                     urlConnection.openConnection();
 
             //Set methods, timeouts, property
@@ -114,6 +115,7 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
             connection.setReadTimeout(READ_TIMEOUT);
             connection.setConnectTimeout(CONNECTION_TIMEOUT);
             connection.setDoOutput(true);
+            connection.setInstanceFollowRedirects(false);
             connection.setRequestProperty("accept-encoding", "identity");
             connection.setRequestProperty("content-encoding", "identity");
 
@@ -126,9 +128,6 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
                 filePath = (File) params[2];
                 sendParams(url, countThread, fileSize, filePath);
                 responseMessage = DOWNLOAD_START;
-
-                //Disconnect to out url
-                connection.disconnect();
             } else {
                 responseCode = connection.getResponseCode();
                 responseMessage = connection.getResponseMessage();
@@ -138,6 +137,9 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
             responseMessage = e.getMessage();
             e.printStackTrace();
             return "";
+        }
+        finally {
+            if (connection != null) connection.disconnect();
         }
 
         return null;
@@ -162,7 +164,7 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
     }
 
     @Override
-    public void onTaskError(String msg){
+    public void onTaskError(String msg) {
         responseMessage = msg;
         delegate.responseServer(responseMessage);
     }
