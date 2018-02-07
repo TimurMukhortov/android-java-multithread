@@ -1,7 +1,6 @@
 package com.example.timurmuhortov.multithread_downloader.utils;
 
 import android.os.AsyncTask;
-import android.util.Log;
 import android.webkit.URLUtil;
 
 import java.io.File;
@@ -20,7 +19,7 @@ import static java.lang.Math.min;
  **/
 
 
-public class MakeRequestTask extends AsyncTask<Object, Void, String> implements OnTaskCompleted {
+public class MakeRequestTask extends AsyncTask<Object, Void, String> implements PartDownloadTask {
 
     private static final String REQUEST_METHOD = "GET";
     private static final int READ_TIMEOUT = 15000;
@@ -160,5 +159,11 @@ public class MakeRequestTask extends AsyncTask<Object, Void, String> implements 
         if (countThread.equals(countReadyThread)) {
             createResultFile(fileName);
         }
+    }
+
+    @Override
+    public void onTaskError(String msg){
+        responseMessage = msg;
+        delegate.responseServer(responseMessage);
     }
 }

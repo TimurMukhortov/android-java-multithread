@@ -8,7 +8,9 @@ package com.example.timurmuhortov.multithread_downloader.utils
  **/
 
 
-interface OnTaskCompleted {
+interface PartDownloadTask {
 
     fun onTaskCompleted()
+
+    fun onTaskError(msg: String)
 }
